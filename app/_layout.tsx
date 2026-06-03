@@ -1,4 +1,4 @@
-import { Stack } from "expo-router";
+import { Stack, usePathname } from "expo-router";
 
 import Toast from "react-native-toast-message";
 
@@ -18,13 +18,22 @@ import {
 
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import AppHeader from "../app/components/AppHeader";
+
 export default function RootLayout() {
+  const pathname = usePathname();
+
   const [fontsLoaded] = useFonts({
     Comfortaa_400Regular,
     Comfortaa_500Medium,
     Comfortaa_600SemiBold,
     Comfortaa_700Bold,
   });
+
+  // HIDE HEADER IN LOGIN SCREEN
+
+  const hideHeader =
+    pathname.includes("/login");
 
   if (!fontsLoaded) {
     return (
@@ -33,7 +42,7 @@ export default function RootLayout() {
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: "#EBCF59",
+          backgroundColor: "#FFFFFF",
         }}
       >
         <ActivityIndicator
@@ -47,15 +56,27 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <>
+        {/* GLOBAL HEADER */}
+
+        {!hideHeader && <AppHeader />}
+
+        {/* ROUTES */}
+
         <Stack
           screenOptions={{
             headerShown: false,
+
+            contentStyle: {
+              backgroundColor: "#FFFFFF",
+            },
           }}
         >
           <Stack.Screen name="(auth)" />
 
           <Stack.Screen name="(tabs)" />
         </Stack>
+
+        {/* TOAST */}
 
         <Toast />
       </>

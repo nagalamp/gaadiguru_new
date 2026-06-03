@@ -10,6 +10,12 @@ import {
     MaterialCommunityIcons,
   } from "@expo/vector-icons";
   
+  import {
+    useSafeAreaInsets,
+  } from "react-native-safe-area-context";
+  
+  import { theme } from "../../theme";
+  
   type Props = {
     title?: string;
   
@@ -21,39 +27,73 @@ import {
   
     onNotificationPress,
   }: Props) {
+    const insets = useSafeAreaInsets();
+  
     return (
-      <View style={styles.container}>
-        {/* LEFT */}
+      <View
+        style={[
+          styles.wrapper,
   
-        <View style={styles.leftSection}>
-          <Image
-            source={require("../../assets/images/logo.png")}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+          {
+            paddingTop: insets.top + 10,
+          },
+        ]}
+      >
+        <View style={styles.container}>
+          {/* LEFT */}
   
-          <Text style={styles.title}>
-            {title}
-          </Text>
+          <View style={styles.leftSection}>
+            <Image
+              source={require("../../assets/images/logo.png")}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+  
+            <Text style={styles.title}>
+              {title}
+            </Text>
+          </View>
+  
+          {/* RIGHT */}
+  
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={onNotificationPress}
+          >
+            <MaterialCommunityIcons
+              name="bell-outline"
+              size={24}
+              color={theme.COLORS.text}
+            />
+          </TouchableOpacity>
         </View>
-  
-        {/* RIGHT */}
-  
-        <TouchableOpacity
-          style={styles.iconButton}
-          onPress={onNotificationPress}
-        >
-          <MaterialCommunityIcons
-            name="bell-outline"
-            size={24}
-            color="#111111"
-          />
-        </TouchableOpacity>
       </View>
     );
   }
   
   const styles = StyleSheet.create({
+    wrapper: {
+      backgroundColor:
+        theme.COLORS.background,
+  
+      paddingHorizontal: 20,
+  
+      paddingBottom: 18,
+  
+      elevation: 4,
+  
+      shadowColor: "#000",
+  
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+  
+      shadowOpacity: 0.08,
+  
+      shadowRadius: 6,
+    },
+  
     container: {
       height: 70,
   
@@ -62,12 +102,6 @@ import {
       alignItems: "center",
   
       justifyContent: "space-between",
-  
-      backgroundColor: "#FFFFFF",
-  
-      paddingHorizontal: 4,
-  
-      marginBottom: 20,
     },
   
     leftSection: {
@@ -77,9 +111,9 @@ import {
     },
   
     logo: {
-      width: 42,
+      width: 50,
   
-      height: 42,
+      height: 50,
   
       marginRight: 12,
     },
@@ -87,22 +121,35 @@ import {
     title: {
       fontSize: 22,
   
-      color: "#111111",
+      color: theme.COLORS.text,
   
-      fontFamily: "Comfortaa_700Bold",
+      fontFamily: theme.FONTS.bold,
     },
   
     iconButton: {
-      width: 42,
+      width: 46,
   
-      height: 42,
+      height: 46,
   
-      borderRadius: 21,
+      borderRadius: 23,
   
-      backgroundColor: "#F4DE7A",
+      backgroundColor: "#FFFFFF",
   
       justifyContent: "center",
   
       alignItems: "center",
+  
+      elevation: 3,
+  
+      shadowColor: "#000",
+  
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+  
+      shadowOpacity: 0.1,
+  
+      shadowRadius: 4,
     },
   });
