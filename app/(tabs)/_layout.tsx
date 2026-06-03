@@ -1,33 +1,91 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
+import { Tabs } from "expo-router";
 
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import {
+  MaterialCommunityIcons,
+} from "@expo/vector-icons";
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+export default function TabsLayout() {
+  const insets = useSafeAreaInsets();
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
-        tabBarButton: HapticTab,
-      }}>
+
+        tabBarStyle: {
+          height: 70 + insets.bottom,
+
+          paddingBottom: insets.bottom,
+
+          paddingTop: 6,
+
+          backgroundColor: "#111111",
+
+          borderTopWidth: 0,
+        },
+
+        tabBarActiveTintColor: "#EBCF59",
+
+        tabBarInactiveTintColor: "#999999",
+
+        tabBarLabelStyle: {
+          fontFamily: "Comfortaa_600SemiBold",
+
+          fontSize: 12,
+
+          marginBottom: 4,
+        },
+      }}
+    >
+      {/* HOME */}
+
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          title: "Home",
+
+          tabBarIcon: ({
+            color,
+            size,
+            focused,
+          }) => (
+            <MaterialCommunityIcons
+              name={
+                focused
+                  ? "home"
+                  : "home-outline"
+              }
+              size={size}
+              color={color}
+            />
+          ),
         }}
       />
+
+      {/* PROFILE */}
+
       <Tabs.Screen
-        name="explore"
+        name="profile"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          title: "Profile",
+
+          tabBarIcon: ({
+            color,
+            size,
+            focused,
+          }) => (
+            <MaterialCommunityIcons
+              name={
+                focused
+                  ? "account"
+                  : "account-outline"
+              }
+              size={size}
+              color={color}
+            />
+          ),
         }}
       />
     </Tabs>
