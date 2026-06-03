@@ -16,6 +16,8 @@ import BookRideScreen from "../components/BookRideScreen";
 
 import ParcelScreen from "../components/ParcelScreen";
 
+import AppHeader from "../components/AppHeader";
+
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
 
@@ -33,7 +35,11 @@ export default function HomeScreen() {
           },
         ]}
       >
-        {/* TOP SWITCH TAB */}
+        {/* APP HEADER */}
+
+        <AppHeader />
+
+        {/* TOP SWITCH TABS */}
 
         <TopSwitchTabs
           activeTab={activeTab}
