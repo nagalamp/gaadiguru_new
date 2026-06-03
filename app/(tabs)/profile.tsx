@@ -9,7 +9,7 @@ import {
   
   import { router } from "expo-router";
   
-  import { removeToken } from "../utils/storage";
+  import { removeToken } from "../../utils/storage";
   
   export default function ProfileScreen() {
     const logout = async () => {

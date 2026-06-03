@@ -1,47 +1,47 @@
-import {
-  View,
-  StyleSheet,
-  Text,
-} from "react-native";
-
 import { useState } from "react";
 
 import {
-  SafeAreaView,
-} from "react-native-safe-area-context";
+  View,
+  StyleSheet,
+} from "react-native";
 
-import TopSwitchTabs from "../components/TopSwitchTabs";
+import { SafeAreaView } from "react-native-safe-area-context";
+import TopSwitchTabs from "../../components/TopSwitchTabs";
+import BookRideScreen from "../../components/BookRideScreen";
+import ParcelScreen from "../../components/ParcelScreen";
 
-import BookRideScreen from "../components/BookRideScreen";
-
-import ParcelScreen from "../components/ParcelScreen";
+const TABS = {
+  BOOK: "book",
+  PARCEL: "parcel",
+};
 
 export default function HomeScreen() {
   const [activeTab, setActiveTab] =
-    useState("book");
+    useState(TABS.BOOK);
+
+  const renderScreen = () => {
+    switch (activeTab) {
+      case TABS.BOOK:
+        return <BookRideScreen />;
+
+      case TABS.PARCEL:
+        return <ParcelScreen />;
+
+      default:
+        return <BookRideScreen />;
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        {/* APP HEADER */}
-
-       
-
-        {/* TOP SWITCH TABS */}
-
         <TopSwitchTabs
           activeTab={activeTab}
           setActiveTab={setActiveTab}
         />
 
-        {/* BODY */}
-
         <View style={styles.body}>
-          {activeTab === "book" ? (
-            <BookRideScreen />
-          ) : (
-            <ParcelScreen />
-          )}
+          {renderScreen()}
         </View>
       </View>
     </SafeAreaView>
@@ -51,13 +51,11 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-
     backgroundColor: "#FFFFFF",
   },
 
   content: {
     flex: 1,
-
     paddingHorizontal: 16,
   },
 

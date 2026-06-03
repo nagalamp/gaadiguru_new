@@ -13,7 +13,7 @@ import {
   
   import { useRouter } from "expo-router";
   
-  import { theme } from "../../theme";
+  import { theme } from "../theme";
   
   export default function WhereToGoBox() {
     const router = useRouter();
@@ -22,11 +22,11 @@ import {
       <TouchableOpacity
         activeOpacity={0.9}
         style={styles.container}
-        // onPress={() =>
-        //   router.push(
-        //     "/map-screens/location-picker"
-        //   )
-        // }
+        onPress={() =>
+          router.push(
+            "/map-screens/location-picker"
+          )
+        }
       >
         {/* LEFT ICON */}
   

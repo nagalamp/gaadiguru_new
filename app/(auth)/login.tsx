@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import {
   View,
   Text,
- TextInput,
+  TextInput,
   TouchableOpacity,
   StyleSheet,
   StatusBar,
@@ -21,9 +21,18 @@ import { router } from "expo-router";
 import {
   sendOTPAPI,
   verifyOTPAPI,
-} from "../services/authService";
+} from "../../services/authService";
 
-import { setToken } from "../utils/storage";
+import { setToken } from "../../utils/storage";
+
+const COLORS = {
+  primary: "#EBCF59",
+  secondary: "#F4DE7A",
+  border: "#C8AE46",
+  black: "#111111",
+  subtitle: "#5C5130",
+  placeholder: "#7A6B2F",
+};
 
 export default function LoginScreen() {
   const [mobile, setMobile] = useState("");
@@ -34,37 +43,26 @@ export default function LoginScreen() {
   const [loading, setLoading] =
     useState(false);
 
-  // =========================
-  // TOAST
-  // =========================
-
-  const showError = (message: string) => {
-    Toast.show({
-      type: "error",
-      text1: message,
-      position: "top",
-      topOffset: 60,
-    });
-  };
-
-  const showSuccess = (
+  const showToast = (
+    type: "success" | "error",
     message: string
   ) => {
     Toast.show({
-      type: "success",
+      type,
       text1: message,
       position: "top",
       topOffset: 60,
     });
   };
 
-  // =========================
-  // VALIDATION
-  // =========================
+  const sanitizeNumber = (
+    value: string
+  ) => value.replace(/[^0-9]/g, "");
 
   const validateMobile = () => {
     if (!mobile.trim()) {
-      showError(
+      showToast(
+        "error",
         "Mobile number is required"
       );
 
@@ -72,7 +70,8 @@ export default function LoginScreen() {
     }
 
     if (!/^[6-9]\d{9}$/.test(mobile)) {
-      showError(
+      showToast(
+        "error",
         "Enter valid mobile number"
       );
 
@@ -84,13 +83,17 @@ export default function LoginScreen() {
 
   const validateOTP = () => {
     if (!otp.trim()) {
-      showError("OTP is required");
+      showToast(
+        "error",
+        "OTP is required"
+      );
 
       return false;
     }
 
     if (!/^\d{6}$/.test(otp)) {
-      showError(
+      showToast(
+        "error",
         "Enter valid 6 digit OTP"
       );
 
@@ -100,9 +103,25 @@ export default function LoginScreen() {
     return true;
   };
 
-  // =========================
-  // SEND OTP
-  // =========================
+  const saveUserData = async (
+    data: any
+  ) => {
+    if (data.token) {
+      await setToken(data.token);
+    }
+
+    await AsyncStorage.setItem(
+      "user",
+      JSON.stringify({
+        mobile,
+        userType: "driver",
+        deviceType: "mobile",
+        id: data?.user?._id || "",
+        name: data?.user?.name || "",
+        email: data?.user?.email || "",
+      })
+    );
+  };
 
   const sendOTP = async () => {
     if (!validateMobile()) return;
@@ -119,38 +138,38 @@ export default function LoginScreen() {
         data
       );
 
-      if (data.success) {
-        setShowOTP(true);
-
-        showSuccess(
+      if (!data.success) {
+        return showToast(
+          "error",
           data.message ||
-            "OTP sent successfully"
-        );
-      } else {
-        showError(
-          data.message ||
-            "Failed to send OTP"
+          "Failed to send OTP"
         );
       }
+
+      setShowOTP(true);
+
+      showToast(
+        "success",
+        data.message ||
+        "OTP sent successfully"
+      );
     } catch (error: any) {
       console.log(
         "SEND OTP ERROR:",
         error?.response?.data
       );
 
-      showError(
-        error?.response?.data?.message ||
-          error?.message ||
-          "Server Error"
+      showToast(
+        "error",
+        error?.response?.data
+          ?.message ||
+        error?.message ||
+        "Server Error"
       );
     } finally {
       setLoading(false);
     }
   };
-
-  // =========================
-  // VERIFY OTP
-  // =========================
 
   const verifyOTP = async () => {
     if (!validateOTP()) return;
@@ -168,66 +187,47 @@ export default function LoginScreen() {
         data
       );
 
-      if (data.success) {
-        // SAVE TOKEN
-
-        if (data.token) {
-          await setToken(data.token);
-        }
-
-        // SAVE USER DETAILS
-
-        await AsyncStorage.setItem(
-          "user",
-          JSON.stringify({
-            mobile,
-            userType: "driver",
-            deviceType: "mobile",
-
-            id:
-              data?.user?._id || "",
-
-            name:
-              data?.user?.name || "",
-
-            email:
-              data?.user?.email || "",
-          })
-        );
-
-        showSuccess(
-          data.message ||
-            "Login Successful"
-        );
-
-        // NAVIGATE TO TABS
-
-        setTimeout(() => {
-          router.replace(
-            "/(tabs)"
-          );
-        }, 1000);
-      } else {
-        showError(
-          data.message ||
-            "Invalid OTP"
+      if (!data.success) {
+        return showToast(
+          "error",
+          data.message || "Invalid OTP"
         );
       }
+
+      await saveUserData(data);
+
+      showToast(
+        "success",
+        data.message ||
+        "Login Successful"
+      );
+
+      setTimeout(() => {
+        router.replace("/(tabs)");
+      }, 1000);
     } catch (error: any) {
       console.log(
         "VERIFY OTP ERROR:",
         error?.response?.data
       );
 
-      showError(
-        error?.response?.data?.message ||
-          error?.message ||
-          "Verification failed"
+      showToast(
+        "error",
+        error?.response?.data
+          ?.message ||
+        error?.message ||
+        "Verification failed"
       );
     } finally {
       setLoading(false);
     }
   };
+
+  const buttonTitle = loading
+    ? "Please wait..."
+    : showOTP
+      ? "Verify OTP"
+      : "Send OTP";
 
   return (
     <KeyboardAvoidingView
@@ -240,10 +240,10 @@ export default function LoginScreen() {
     >
       <StatusBar
         barStyle="dark-content"
-        backgroundColor="#EBCF59"
+        backgroundColor={
+          COLORS.primary
+        }
       />
-
-      {/* LOGO */}
 
       <View style={styles.logoContainer}>
         <Image
@@ -252,8 +252,6 @@ export default function LoginScreen() {
           resizeMode="contain"
         />
       </View>
-
-      {/* TITLE */}
 
       <Text style={styles.title}>
         Welcome Back
@@ -264,54 +262,43 @@ export default function LoginScreen() {
         number
       </Text>
 
-      {/* INPUT */}
-
       <View style={styles.inputContainer}>
-        {!showOTP ? (
-          <TextInput
-            value={mobile}
-            onChangeText={(text) =>
-              setMobile(
-                text.replace(
-                  /[^0-9]/g,
-                  ""
-                )
+        <TextInput
+          value={showOTP ? otp : mobile}
+          onChangeText={(text) =>
+            showOTP
+              ? setOtp(
+                sanitizeNumber(text)
               )
-            }
-            placeholder="Enter mobile number"
-            placeholderTextColor="#7A6B2F"
-            keyboardType="number-pad"
-            maxLength={10}
-            style={styles.input}
-          />
-        ) : (
-          <TextInput
-            value={otp}
-            onChangeText={(text) =>
-              setOtp(
-                text.replace(
-                  /[^0-9]/g,
-                  ""
-                )
+              : setMobile(
+                sanitizeNumber(text)
               )
-            }
-            placeholder="Enter 6 digit OTP"
-            placeholderTextColor="#7A6B2F"
-            keyboardType="number-pad"
-            maxLength={6}
-            style={styles.otpInput}
-          />
-        )}
+          }
+          placeholder={
+            showOTP
+              ? "Enter 6 digit OTP"
+              : "Enter mobile number"
+          }
+          placeholderTextColor={
+            COLORS.placeholder
+          }
+          keyboardType="number-pad"
+          maxLength={
+            showOTP ? 6 : 10
+          }
+          style={
+            showOTP
+              ? styles.otpInput
+              : styles.input
+          }
+        />
       </View>
-
-      {/* BUTTON */}
 
       <TouchableOpacity
         style={[
           styles.button,
-
           loading &&
-            styles.disabledButton,
+          styles.disabledButton,
         ]}
         onPress={
           showOTP
@@ -321,21 +308,14 @@ export default function LoginScreen() {
         disabled={loading}
       >
         <Text style={styles.buttonText}>
-          {loading
-            ? "Please wait..."
-            : showOTP
-            ? "Verify OTP"
-            : "Send OTP"}
+          {buttonTitle}
         </Text>
       </TouchableOpacity>
-
-      {/* CHANGE NUMBER */}
 
       {showOTP && (
         <TouchableOpacity
           onPress={() => {
             setShowOTP(false);
-
             setOtp("");
           }}
         >
@@ -353,7 +333,8 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#EBCF59",
+    backgroundColor:
+      COLORS.primary,
     justifyContent: "center",
     paddingHorizontal: 24,
   },
@@ -372,7 +353,7 @@ const styles = StyleSheet.create({
     fontSize: 30,
     fontFamily:
       "Comfortaa_700Bold",
-    color: "#111111",
+    color: COLORS.black,
     marginBottom: 10,
     textAlign: "center",
   },
@@ -381,7 +362,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily:
       "Comfortaa_500Medium",
-    color: "#5C5130",
+    color: COLORS.subtitle,
     marginBottom: 40,
     textAlign: "center",
     lineHeight: 22,
@@ -389,9 +370,10 @@ const styles = StyleSheet.create({
 
   inputContainer: {
     height: 60,
-    backgroundColor: "#F4DE7A",
+    backgroundColor:
+      COLORS.secondary,
     borderWidth: 1,
-    borderColor: "#C8AE46",
+    borderColor: COLORS.border,
     borderRadius: 20,
     justifyContent: "center",
     paddingHorizontal: 18,
@@ -403,22 +385,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily:
       "Comfortaa_600SemiBold",
-    color: "#111111",
+    color: COLORS.black,
   },
 
   otpInput: {
     flex: 1,
     textAlign: "center",
-    letterSpacing: 0,
     fontSize: 16,
     fontFamily:
       "Comfortaa_700Bold",
-    color: "#111111",
+    color: COLORS.black,
   },
 
   button: {
     height: 60,
-    backgroundColor: "#111111",
+    backgroundColor:
+      COLORS.black,
     borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
@@ -429,7 +411,7 @@ const styles = StyleSheet.create({
   },
 
   buttonText: {
-    color: "#EBCF59",
+    color: COLORS.primary,
     fontSize: 16,
     fontFamily:
       "Comfortaa_700Bold",
@@ -439,7 +421,7 @@ const styles = StyleSheet.create({
     marginTop: 24,
     textAlign: "center",
     fontSize: 14,
-    color: "#111111",
+    color: COLORS.black,
     fontFamily:
       "Comfortaa_600SemiBold",
   },

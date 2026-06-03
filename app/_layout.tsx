@@ -14,11 +14,14 @@ import {
 import {
   View,
   ActivityIndicator,
+  StyleSheet,
 } from "react-native";
 
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
-import AppHeader from "../app/components/AppHeader";
+import AppHeader from "../components/AppHeader";
+
+import { theme } from "../theme";
 
 export default function RootLayout() {
   const pathname = usePathname();
@@ -30,24 +33,17 @@ export default function RootLayout() {
     Comfortaa_700Bold,
   });
 
-  // HIDE HEADER IN LOGIN SCREEN
+  // HIDE HEADER ON AUTH SCREENS
 
   const hideHeader =
-    pathname.includes("/login");
+    pathname?.includes("/login");
 
   if (!fontsLoaded) {
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "#FFFFFF",
-        }}
-      >
+      <View style={styles.loaderContainer}>
         <ActivityIndicator
           size="large"
-          color="#111111"
+          color={theme.COLORS.primary}
         />
       </View>
     );
@@ -55,31 +51,54 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <>
+      <View style={styles.container}>
         {/* GLOBAL HEADER */}
 
         {!hideHeader && <AppHeader />}
 
         {/* ROUTES */}
 
-        <Stack
-          screenOptions={{
-            headerShown: false,
+        <View style={styles.body}>
+          <Stack
+            screenOptions={{
+              headerShown: false,
 
-            contentStyle: {
-              backgroundColor: "#FFFFFF",
-            },
-          }}
-        >
-          <Stack.Screen name="(auth)" />
-
-          <Stack.Screen name="(tabs)" />
-        </Stack>
+              contentStyle: {
+                backgroundColor:
+                  theme.COLORS.background,
+              },
+            }}
+          />
+        </View>
 
         {/* TOAST */}
 
         <Toast />
-      </>
+      </View>
     </SafeAreaProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+
+    backgroundColor:
+      theme.COLORS.background,
+  },
+
+  body: {
+    flex: 1,
+  },
+
+  loaderContainer: {
+    flex: 1,
+
+    justifyContent: "center",
+
+    alignItems: "center",
+
+    backgroundColor:
+      theme.COLORS.background,
+  },
+});
